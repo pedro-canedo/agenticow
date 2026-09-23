@@ -5,10 +5,14 @@
  * algo muda (motor sobe ou desce, modelo baixado ou apagado, Jev ligado,
  * favoritos do OpenRouter, 9router). Aqui:
  *
- *   1. `env` — as chaves de API (`*_API_KEY`) vão para o ambiente DESTE
- *      processo, em memória: o adaptador as lê por requisição pelo nome
- *      (`apiKeyEnv`), então trocar uma chave não exige reiniciar, e nenhuma
- *      chave toca arquivo;
+ *   1. `env` — as chaves de API (`*_API_KEY`) ficam na memória DESTE
+ *      processo. O adaptador as pede ao serviço de credenciais pelo nome
+ *      (`apiKeyEnv`), a cada requisição; só que o serviço lê o ambiente num
+ *      retrato congelado na subida (`launchEnvironment`), e o que chega pelo
+ *      canal depois disso ele não veria. Por isso a camada `process` desse
+ *      retrato passa a consultar antes as chaves do app (`ambienteVivo`) —
+ *      para o serviço elas são ambiente herdado, que é o que são: somente
+ *      leitura na UI, trocadas sem reiniciar, nunca em arquivo;
  *   2. `piAi` — a seção `llm-pi-ai` inteira, montada pelo app, substitui a do
  *      usuário pela API de configurações (com validação de schema — uma
  *      mudança do upstream quebra no teste, não na máquina de alguém);
@@ -32,6 +36,12 @@ export const ROTAS_GERENCIADAS = Object.freeze(['openweights', 'openrouter', 'ni
 const PROVEDOR_NATIVO = 'deepseek-official'
 
 const NOME_DE_CHAVE = /^[A-Z][A-Z0-9_]*_API_KEY$/
+
+/** A chave de contexto do retrato do ambiente (`DSH_LAUNCH_ENVIRONMENT_KEY`). */
+const AMBIENTE = 'launchEnvironment'
+
+/** As chaves que o app entregou, só em memória. */
+const CHAVES = new Map()
 
 /**
  * @typedef {{ id: string, reasoningEfforts?: Record<string, unknown> }} Modelo
@@ -76,15 +86,68 @@ export function proximoPadrao(atual, rotas) {
 }
 
 /**
- * Aplica um catálogo.
- * @param {{ settings: any }} ctx
- * @param {{ piAi?: { providers?: Record<string, Rota> }, env?: Record<string, unknown> }} msg
+ * Faz a camada `process` do retrato do ambiente consultar antes `memoria`.
+ * O retrato é um objeto `{ get, getFrom }` e todo consumidor o busca no
+ * contexto a cada resolução; um contrato do upstream que mude isso quebra no
+ * e2e do catálogo, que confere a chave pelo serviço de credenciais.
+ * @param {{ get: Function, getFrom: Function } | undefined} retrato
+ * @param {Map<string, string>} memoria
+ * @returns {boolean} se o retrato foi encontrado e envolvido.
  */
-export async function aplicarCatalogo(ctx, msg) {
-  for (const [nome, valor] of Object.entries(msg.env ?? {})) {
-    if (!NOME_DE_CHAVE.test(nome)) continue
-    if (typeof valor === 'string' && valor !== '') process.env[nome] = valor
-    else delete process.env[nome]
+export function ambienteVivo(retrato, memoria) {
+  if (retrato === undefined || retrato === null || typeof retrato.getFrom !== 'function') return false
+  const original = retrato.getFrom
+  const todas = ['process', 'project-env', 'user-env']
+  retrato.getFrom = (name, sources) => {
+    if (sources.includes('process')) {
+      const valor = memoria.get(name)
+      if (valor !== undefined) return { value: valor, source: 'process' }
+    }
+    return original(name, sources)
+  }
+  retrato.get = (name) => retrato.getFrom(name, todas)
+  return true
+}
+
+/**
+ * Troca as chaves do app pelas de `env`: a que não veio mais sai.
+ * @param {Record<string, unknown>} env
+ * @param {Map<string, string>} memoria
+ */
+export function trocarChaves(env, memoria) {
+  const novas = new Map()
+  for (const [nome, valor] of Object.entries(env)) {
+    if (NOME_DE_CHAVE.test(nome) && typeof valor === 'string' && valor !== '') novas.set(nome, valor)
+  }
+  for (const nome of memoria.keys()) {
+    if (!novas.has(nome)) {
+      memoria.delete(nome)
+      delete process.env[nome]
+    }
+  }
+  for (const [nome, valor] of novas) {
+    memoria.set(nome, valor)
+    // Bibliotecas de terceiros ainda leem o process.env direto.
+    process.env[nome] = valor
+  }
+}
+
+/**
+ * Aplica um catálogo.
+ * @param {{ settings: any, get?: Function }} ctx
+ * @param {{ piAi?: { providers?: Record<string, Rota> }, env?: Record<string, unknown> }} msg
+ * @param {Map<string, string>} [memoria]
+ */
+export async function aplicarCatalogo(ctx, msg, memoria = CHAVES) {
+  trocarChaves(msg.env ?? {}, memoria)
+  // Falha alto: uma chave que o serviço de credenciais não enxerga vira
+  // MISSING_CREDENTIAL no primeiro turno, longe de quem pode consertar.
+  const credenciais = ctx.get?.('credentials')
+  if (credenciais !== undefined) {
+    for (const [nome, valor] of memoria) {
+      const resolvida = await credenciais.resolve(nome)
+      if (resolvida?.value !== valor) throw new Error(`a chave ${nome} não chega ao serviço de credenciais`)
+    }
   }
   const piAi = msg.piAi ?? { providers: {} }
   await ctx.settings.replace('llm-pi-ai', piAi)
@@ -101,6 +164,7 @@ export async function aplicarCatalogo(ctx, msg) {
 export function apply(ctx) {
   const canal = globalThis[CANAL]
   if (canal === undefined) return
+  ambienteVivo(ctx.get(AMBIENTE), CHAVES)
 
   let assentou = false
   let pendente

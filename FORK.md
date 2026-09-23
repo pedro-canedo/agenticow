@@ -118,8 +118,18 @@ conexão de saída em repouso.
 `openrouter` e `ninerouter`) e a manda pelo canal; o plugin a aplica pela API de
 configurações (com validação de schema) e repara o modelo padrão só quando está ausente ou
 quebrado — as mesmas regras que o app aplicava editando o `settings.yaml` por fora. As chaves
-vão para o `process.env` do Host, em memória: o adaptador as lê por requisição pelo nome
-(`apiKeyEnv`), então trocar uma chave não reinicia nada, e nenhuma chave toca arquivo.
+ficam na memória do Host. O adaptador as pede ao serviço de credenciais (`ctx.credentials`)
+pelo nome (`apiKeyEnv`) a cada requisição, e o `credentials-local` lê o ambiente num retrato
+congelado na subida (`launchEnvironment`, criado pelo `loadLayeredEnv`): gravar no
+`process.env` depois dela não chega a ninguém — o primeiro turno falhava com
+`MISSING_CREDENTIAL`. O plugin envolve a camada `process` desse retrato
+(`ambienteVivo`) para consultar antes as chaves do app; para o serviço elas são ambiente
+herdado (somente leitura na tela de Modelos, que é o certo: quem as gerencia é o app), e
+trocar uma chave não reinicia nada nem toca arquivo. Depois de aplicar, o plugin confere
+cada chave pelo próprio serviço de credenciais e responde `catalog-error` se alguma não
+chegar — é o que o `tests/catalogo.test.mjs` cobra, antes e depois da subida. Se o upstream
+mudar o formato do retrato (hoje `{ get, getFrom }`, buscado no contexto a cada resolução),
+é esse teste que quebra.
 
 **pt-BR e marca.** O registro de idiomas não deixa sobrescrever o `en` de um namespace; o
 pt-BR entra como idioma externo com fallback no inglês. Em inglês, a marca vem dos slots

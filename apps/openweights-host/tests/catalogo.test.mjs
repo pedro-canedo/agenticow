@@ -45,24 +45,53 @@ describe('catálogo do OpenWeights', { skip: pular }, () => {
     let stderr = ''
     filho.stderr.on('data', (d) => { stderr += d })
     const mensagens = []
-    const chegou = (tipo) => new Promise((ok, falha) => {
-      const t = setTimeout(() => falha(new Error(`sem "${tipo}"\n${stderr.slice(-2000)}`)), 60_000)
-      const ver = () => { const m = mensagens.find((x) => x.type === tipo); if (m) { clearTimeout(t); ok(m) } else setTimeout(ver, 50) }
+    // Um teste que falha tem de terminar: o Host sai e a sondagem para.
+    after(() => { filho.kill() })
+    const esperar = (achar, descricao, prazo) => new Promise((ok, falha) => {
+      let vivo = true
+      const t = setTimeout(() => { vivo = false; falha(new Error(`sem ${descricao}\n${stderr.slice(-2000)}`)) }, prazo)
+      const ver = () => {
+        if (!vivo) return
+        const m = mensagens.find(achar)
+        if (m) { clearTimeout(t); ok(m) } else setTimeout(ver, 50)
+      }
       ver()
     })
+    const chegou = (tipo) => esperar((x) => x.type === tipo, `"${tipo}"`, 60_000)
     createInterface({ input: filho.stdout }).on('line', (l) => mensagens.push(JSON.parse(l)))
 
     // Mandado antes de a árvore assentar: tem de ficar guardado e ser aplicado depois.
     filho.stdin.write(JSON.stringify(catalogo(7)) + '\n')
-    const aplicado = await chegou('catalog-applied')
-    assert.equal(aplicado.revision, 7)
+    const aplicado = await esperar(
+      (x) => (x.type === 'catalog-applied' || x.type === 'catalog-error') && x.revision === 7,
+      'resposta ao catálogo 7',
+      60_000,
+    )
+    assert.equal(aplicado.type, 'catalog-applied', JSON.stringify(aplicado))
     await chegou('ready')
+
+    // Depois da subida: a chave nova tem de chegar ao serviço de credenciais
+    // (o plugin confere e responde catalog-error se não chegar).
+    const segundo = catalogo(8)
+    segundo.env = { OPENWEIGHTS_API_KEY: `${CHAVE}-2` }
+    filho.stdin.write(JSON.stringify(segundo) + '\n')
+    const reaplicado = await esperar(
+      (x) => (x.type === 'catalog-applied' || x.type === 'catalog-error') && x.revision === 8,
+      'resposta ao catálogo 8',
+      30_000,
+    )
+    assert.equal(reaplicado.type, 'catalog-applied', JSON.stringify(reaplicado))
 
     filho.stdin.write(JSON.stringify({ ow: 1, type: 'shutdown' }) + '\n')
     await new Promise((ok) => filho.once('exit', ok))
 
     const texto = readFileSync(join(home, 'settings.yaml'), 'utf8')
     assert.ok(!texto.includes(CHAVE), 'a chave de API não pode ir para arquivo')
+    for (const arquivo of ['.credentials.yaml', 'credentials.yaml']) {
+      let credenciais = ''
+      try { credenciais = readFileSync(join(home, arquivo), 'utf8') } catch {}
+      assert.ok(!credenciais.includes(CHAVE), `a chave de API não pode ir para ${arquivo}`)
+    }
     const yaml = createRequire(join(RUNTIME, 'package.json'))('js-yaml')
     const doc = yaml.load(texto)
     assert.equal(doc['llm-pi-ai'].providers.openweights.baseURL, 'http://127.0.0.1:9/v1')
