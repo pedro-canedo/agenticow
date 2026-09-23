@@ -35,7 +35,7 @@ principal do OpenWeights.
 
 | Arquivo | Motivo | Como reaplicar |
 |---|---|---|
-| — | nenhuma até aqui | — |
+| `.github/dependabot.yml` (apagado) | No fork, dependências vêm da sincronização com o upstream; o Dependabot abria PRs de bump que só disparavam a CI | Se a sincronização trouxer conflito de modificação/remoção, manter apagado |
 
 ## O runtime
 
