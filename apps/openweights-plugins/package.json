@@ -8,6 +8,7 @@
   "exports": {
     "./control": "./src/control.js",
     "./preferencias": "./src/preferencias.js",
+    "./catalog": "./src/catalog.js",
     "./compat": "./src/compat.js",
     "./package.json": "./package.json"
   },

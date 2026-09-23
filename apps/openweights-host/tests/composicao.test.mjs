@@ -65,6 +65,7 @@ describe('composição do AgenticOw', { skip: pular }, () => {
     assert.equal(c.get('openweights-preferencias')?.name, '@openweights/agenticow-plugins/preferencias')
     assert.equal(c.get('openweights-ui')?.name, '@openweights/agenticow-ui')
     assert.equal(c.get('openweights-compat')?.name, '@openweights/agenticow-plugins/compat')
+    assert.equal(c.get('openweights-catalog')?.name, '@openweights/agenticow-plugins/catalog')
     const web = c.get('web-runtime')?.texto ?? ''
     assert.match(web, /printUrl: false/)
     assert.match(web, /openBrowser: false/)

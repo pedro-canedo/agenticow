@@ -50,6 +50,7 @@ apps/openweights-bundle            @openweights/agenticow-app — bundle: só o 
 apps/openweights-plugins           @openweights/agenticow-plugins — plugins Cordis do Host
   src/control.js                   canal de controle dentro da árvore; anuncia `ready`
   src/preferencias.js              idioma vindo do app (`locale`)
+  src/catalog.js                   catálogo de modelos do app (`catalog`): llm-pi-ai + padrão
   src/compat.js                    polyfill dos Iterator helpers para o WKWebView do macOS 14
 apps/openweights-ui                @openweights/agenticow-ui — plugin de navegador
   src/pt-BR/<namespace>.json       tradução pt-BR da UI do upstream (1.198 strings, 40 namespaces)
@@ -79,7 +80,10 @@ importar o dsh; o app descarta linha sem a marca.
 | host → app | `hello` | `protocol`, `host`, `revision`, `upstreamTag`, `dsh`, `node`, `nodeAbi`, `pid` |
 | host → app | `ready` | `url` (autenticada, com `?token=`), `port` |
 | host → app | `fatal` | `message` |
+| host → app | `catalog-applied` / `catalog-error` | `revision` (+ `message`) |
 | app → host | `shutdown` | — |
+| app → host | `locale` | `locale` (`pt-BR` ou `en`) |
+| app → host | `catalog` | `revision`, `piAi` (a seção `llm-pi-ai` inteira), `env` (chaves `*_API_KEY`) |
 
 EOF no stdin também desliga. O desligamento passa sempre pelo handler de `SIGTERM` do
 próprio CLI (`process.emit`), que faz o dispose da árvore e sai com 0 — um
@@ -110,6 +114,13 @@ DeepSeek). `tests/composicao.test.mjs` lê a composição final e falha se uma d
 sumir do upstream (o `disabled: true` viraria no-op em silêncio) e se o runtime abrir
 conexão de saída em repouso.
 
+**Catálogo de modelos.** O app monta a seção `llm-pi-ai` (as rotas `openweights`,
+`openrouter` e `ninerouter`) e a manda pelo canal; o plugin a aplica pela API de
+configurações (com validação de schema) e repara o modelo padrão só quando está ausente ou
+quebrado — as mesmas regras que o app aplicava editando o `settings.yaml` por fora. As chaves
+vão para o `process.env` do Host, em memória: o adaptador as lê por requisição pelo nome
+(`apiKeyEnv`), então trocar uma chave não reinicia nada, e nenhuma chave toca arquivo.
+
 **pt-BR e marca.** O registro de idiomas não deixa sobrescrever o `en` de um namespace; o
 pt-BR entra como idioma externo com fallback no inglês. Em inglês, a marca vem dos slots
 (`sidebar.brand.*`, `conversation.hero.brand.mark`) e do título vigiado, e o aviso de
@@ -130,14 +141,14 @@ Medido no Linux (Bluefin/Fedora 44, Ryzen 7 5700X3D, 16 threads), com **Node v22
 | # | Verificação | Resultado |
 |---|---|---|
 | 0.1 | Base `dsh-v0.1.5-rc.3` | ✅ `main` = `a4c74a91`, 16.375 commits de história |
-| 0.2 | Install + build | ✅ Linux: `pnpm install --frozen-lockfile` **14 s**; `pnpm run build` **115 s**. ⏳ Windows (CI) |
+| 0.2 | Install + build | ✅ Linux: `pnpm install --frozen-lockfile` **14 s**; `pnpm run build` **115 s**. ✅ Windows e macOS na CI |
 | 0.3 | Host sem `--expose-internals` | ✅ 3 boots limpos na árvore de produção. O loader do Cordis cai no `node-addon-require-builtin` (Node-API v9, pré-compilado por plataforma) |
 | 0.4 | Profile próprio `patchReload: "startup"` sobre o `web-app` | ✅ workspace e árvore de produção. O `web` (`live`) também sobe — ver "crash do HMR" abaixo |
-| 0.5 | Child webview × iframe, com a autenticação real | ✅ Linux (Tauri 2.11.5, WebKitGTK 2.52.6, X11): child faz 303 → cookie → 200 → WebSocket, zero erros. O iframe **também** funciona no WebKitGTK. ⏳ Windows (WebView2) e macOS (WKWebView) na CI |
-| 0.6 | Cliente web no WebKit | ✅ WebKit do Playwright 1.61.1 e WebKitGTK 2.52.6 real: zero erros de console, WebSocket ativo. ⏳ WebKitGTK do Ubuntu 22.04 (base do AppImage) |
+| 0.5 | Child webview × iframe, com a autenticação real | ✅ **nos três sistemas** (`tools/webview-check`, na CI): a child faz 303 → cookie → 200 → WebSocket, zero erros, no WebView2, no WKWebView e no WebKitGTK. O iframe **falha no Windows e no macOS** (depois do 303, `/` chega sem cookie: 401) e só funciona no WebKitGTK — a decisão pela child está provada |
+| 0.6 | Cliente web no WebKit | ✅ WebKit do Playwright, WebKitGTK 2.52.6 e o do Ubuntu 22.04 (base do AppImage, na CI). No WKWebView do macOS 14 o cliente não carregava (`Iterator` do ES2025, só no Safari 18.4+): resolvido com o polyfill `compat` |
 | 0.7 | Tamanho / arquivos / caminho | ✅ árvore de produção sem filtro: **276 MB, 23.987 arquivos**, maior caminho relativo 172 caracteres. Filtro de `.map`/`.d.ts`/`.md`/fontes `.ts` tira ~126 MB e ~14 mil arquivos; prebuilds do node-pty de outras plataformas, ~20 MB. Estimativa: **~130 MB, ~10 mil arquivos**. ⏳ extração no Windows com o Defender |
 | 0.8 | `pnpm deploy --prod` hoisted | ✅ com ressalvas — ver "empacotamento" abaixo |
-| 0.9 | Nativos | ✅ Linux: todo binário da closure é **Node-API** (inclusive o node-pty, via `node-addon-api`), então nenhum fica preso ao ABI do Node. `fs-ext` não existe nesta base. ⏳ demais alvos |
+| 0.9 | Nativos | ✅ todo binário da closure é **Node-API** (inclusive o node-pty, via `node-addon-api`), então nenhum fica preso ao ABI do Node; runtime e host de ponta a ponta passam em Linux, Windows e macOS. `fs-ext` não existe nesta base |
 | 0.10 | Saída de rede | ✅ parcial: boot + 30 s em repouso = **nenhuma conexão de saída**. ⏳ numa sessão com modelo |
 | 0.11 | Sessões gravadas pela 0.1.1-rc.2 | ✅ pelo código: a 0.1.1 gravava o **formato 0**; esta base grava o 3 e traz a cadeia `v0→v1→v2→v3`, que está na árvore de produção. ⏳ prova com um home real da 0.1.1 |
 | 0.12 | Ensaio de sync | ⏳ depois do esqueleto da Fase 1 (hoje `main` é ancestral do master: o merge seria fast-forward) |

@@ -53,6 +53,10 @@
     - id: openweights-compat
       name: '@openweights/agenticow-plugins/compat'
 
+    # Modelos e provedores do app (llm-pi-ai), chaves só em memória.
+    - id: openweights-catalog
+      name: '@openweights/agenticow-plugins/catalog'
+
     # Idioma escolhido no app.
     - id: openweights-preferencias
       name: '@openweights/agenticow-plugins/preferencias'
