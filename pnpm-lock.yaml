@@ -583,6 +583,98 @@ importers:
         specifier: workspace:^
         version: link:../web
 
+  apps/openweights-bundle:
+    dependencies:
+      '@openweights/agenticow-plugins':
+        specifier: workspace:*
+        version: link:../openweights-plugins
+
+  apps/openweights-host:
+    dependencies:
+      '@deepseek-ai/cordis-plugin-group':
+        specifier: workspace:*
+        version: link:../../vendor/group
+      '@deepseek-ai/dsh':
+        specifier: workspace:*
+        version: link:../cli
+      '@deepseek-ai/dsh-anonymous-user-id':
+        specifier: workspace:*
+        version: link:../../packages/identity/anonymous-user-id
+      '@deepseek-ai/dsh-attachment':
+        specifier: workspace:*
+        version: link:../../packages/attachment/attachment
+      '@deepseek-ai/dsh-authorization':
+        specifier: workspace:*
+        version: link:../../packages/credentials/authorization
+      '@deepseek-ai/dsh-bash-local':
+        specifier: workspace:*
+        version: link:../../packages/shell/bash-local
+      '@deepseek-ai/dsh-code-runtime':
+        specifier: workspace:*
+        version: link:../../packages/code-runtime/code-runtime
+      '@deepseek-ai/dsh-compaction':
+        specifier: workspace:*
+        version: link:../../packages/compaction/compaction
+      '@deepseek-ai/dsh-fs':
+        specifier: workspace:*
+        version: link:../../packages/fs/fs
+      '@deepseek-ai/dsh-hook-protocol':
+        specifier: workspace:*
+        version: link:../../packages/hooks/hook-protocol
+      '@deepseek-ai/dsh-jobs':
+        specifier: workspace:*
+        version: link:../../packages/jobs/jobs
+      '@deepseek-ai/dsh-output-retention':
+        specifier: workspace:*
+        version: link:../../packages/util/output-retention
+      '@deepseek-ai/dsh-sandbox':
+        specifier: workspace:*
+        version: link:../../packages/sandbox/sandbox
+      '@deepseek-ai/dsh-sdk-protocol':
+        specifier: workspace:*
+        version: link:../../packages/sdk/protocol
+      '@deepseek-ai/dsh-session-persistence':
+        specifier: workspace:*
+        version: link:../../packages/session/session-persistence
+      '@deepseek-ai/dsh-session-query':
+        specifier: workspace:*
+        version: link:../../packages/session-query/session-query
+      '@deepseek-ai/dsh-session-telemetry':
+        specifier: workspace:*
+        version: link:../../packages/session/session-telemetry
+      '@deepseek-ai/dsh-session-title-llm':
+        specifier: workspace:*
+        version: link:../../packages/session/session-title-llm
+      '@deepseek-ai/dsh-settings':
+        specifier: workspace:*
+        version: link:../../packages/settings/settings
+      '@deepseek-ai/dsh-shell':
+        specifier: workspace:*
+        version: link:../../packages/shell/shell
+      '@deepseek-ai/dsh-spill':
+        specifier: workspace:*
+        version: link:../../packages/spill/spill
+      '@deepseek-ai/dsh-subagent-in-process-driver':
+        specifier: workspace:*
+        version: link:../../packages/subagent/subagent-in-process-driver
+      '@deepseek-ai/dsh-util-time':
+        specifier: workspace:*
+        version: link:../../packages/util/time
+      '@deepseek-ai/dsh-util-workspace-path':
+        specifier: workspace:*
+        version: link:../../packages/util/workspace-path
+      '@deepseek-ai/dsh-workflow':
+        specifier: workspace:*
+        version: link:../../packages/workflow/workflow
+      '@deepseek-ai/schemastery':
+        specifier: link:../../vendor/schemastery
+        version: link:../../vendor/schemastery
+      '@openweights/agenticow-app':
+        specifier: workspace:*
+        version: link:../openweights-bundle
+
+  apps/openweights-plugins: {}
+
   apps/web:
     devDependencies:
       '@deepseek-ai/cordis-plugin-group':

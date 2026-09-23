@@ -1,0 +1,15 @@
+{
+  "name": "@openweights/agenticow-plugins",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plugins Cordis do AgenticOw (canal de controle com o OpenWeights, catálogo de modelos, idioma). Carregados pelo bundle @openweights/agenticow-app.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./control": "./src/control.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src/*.js"
+  ]
+}

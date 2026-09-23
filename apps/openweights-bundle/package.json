@@ -1,0 +1,23 @@
+{
+  "name": "@openweights/agenticow-app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AgenticOw: a camada do OpenWeights sobre o dsh-web-app (o patch do profile). Os plugins moram em @openweights/agenticow-plugins.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "cordis.patch.yml"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "dependencies": {
+    "@openweights/agenticow-plugins": "workspace:*"
+  }
+}

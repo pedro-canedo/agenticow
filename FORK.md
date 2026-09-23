@@ -19,10 +19,11 @@ principal do OpenWeights.
 
 ## Regras do fork
 
-1. **Diff mínimo no núcleo.** Personalização entra como pacote novo em
-   `packages/openweights/*` (`@openweights/*`, `private: true`), app novo em
-   `apps/openweights-host` e patch no `cordis.patch.yml` do próprio profile, por cima do
-   `web-app`.
+1. **Diff mínimo no núcleo.** Tudo o que é nosso mora em `apps/openweights-*`
+   (`@openweights/*`, `private: true`, JavaScript sem etapa de build). O `pnpm-workspace.yaml`
+   já cobre `apps/*`, e o build do upstream (`tsdown`/`tsc -b`) só compila os apps dele — em
+   `packages/*/*` todo pacote é tratado como TypeScript com saída em `lib/types`. A composição
+   é um bundle nosso empilhado **depois** do `web-app` — sobrepõe, nunca substitui.
 2. **Edição em arquivo do upstream só onde não houver seam** (`docs/capability-seams.md`),
    e cada uma entra na tabela abaixo.
 3. **Nomes internos ficam `@deepseek-ai/*`.** Nada é publicado no npm; renomear transformaria
@@ -35,6 +36,65 @@ principal do OpenWeights.
 | Arquivo | Motivo | Como reaplicar |
 |---|---|---|
 | — | nenhuma até aqui | — |
+
+## O runtime
+
+```
+apps/openweights-host              @openweights/agenticow-host — o que o app executa
+  bin/agenticow-host.mjs           toma o stdout, saúda, garante o profile, sobe o dsh
+  src/canal.mjs                    canal de controle (JSON por linha)
+  src/perfil.mjs                   profile "openweights"
+  scripts/prepare-runtime.mjs      monta o runtime autocontido que o app instala
+  tests/host.test.mjs              ponta a ponta pelo protocolo (runtime empacotado)
+apps/openweights-bundle            @openweights/agenticow-app — bundle: só o cordis.patch.yml
+apps/openweights-plugins           @openweights/agenticow-plugins — plugins Cordis (control, …)
+tools/webview-check                a UI dentro da child webview do Tauri, por sistema
+```
+
+**Profile `openweights`:** `dsh-base → dsh-web-app → @openweights/agenticow-app`, com
+`patchReload: "startup"`. O host cria o profile e, a cada boot, recoloca os nossos três
+bundles no começo da pilha e o `startup` — plugins que o dsh acrescentar ficam no fim.
+
+**Por que o bundle e os plugins são pacotes separados:** o dsh projeta no profile as
+*dependências* de um bundle fora da closure do CLI, mas remove de propósito o pacote do
+próprio bundle (`bundleLinks.delete(layer.packageName)` em
+`packages/boot/app-boot/src/profile.ts`). Um bundle nosso não consegue carregar um plugin
+de dentro de si; o bundle depende de `@openweights/agenticow-plugins`, e esse é projetado.
+
+**Protocolo de controle (versão 1).** Uma mensagem JSON por linha, sempre com `"ow": 1`.
+O stdout é exclusivo do protocolo — o host desvia todo o resto para o stderr antes de
+importar o dsh; o app descarta linha sem a marca.
+
+| Direção | Tipo | Campos |
+|---|---|---|
+| host → app | `hello` | `protocol`, `host`, `revision`, `upstreamTag`, `dsh`, `node`, `nodeAbi`, `pid` |
+| host → app | `ready` | `url` (autenticada, com `?token=`), `port` |
+| host → app | `fatal` | `message` |
+| app → host | `shutdown` | — |
+
+EOF no stdin também desliga. O desligamento passa sempre pelo handler de `SIGTERM` do
+próprio CLI (`process.emit`), que faz o dispose da árvore e sai com 0 — um
+`process.kill(pid, 'SIGTERM')` no Windows mataria o processo sem dispose. Comandos de tipos
+sem dono ainda (o catálogo, por exemplo) ficam guardados, o último de cada tipo, até um
+plugin se registrar. A linha humana `dsh web: <url>` é desligada (`printUrl: false`): ela
+carrega o token de lançamento, que não pode ir para log.
+
+**Runtime empacotado** (`prepare-runtime.mjs`): `pnpm deploy --prod --legacy` hoisted;
+materializa os `link:vendor/*`; recusa symlink para fora da árvore; **falha** se qualquer
+dependência ou peer obrigatório não resolver; tira sourcemaps, declarações de tipo e os
+prebuilds do node-pty de outras plataformas; grava `THIRD_PARTY_LICENSES.txt` (closure
+inteira), `LICENSE` e `runtime.json` (identidade). No Linux: **8 s, 11.972 arquivos,
+123 MB**, maior caminho 166 caracteres.
+
+**Empacotar localmente muda o estado da workspace:** o `pnpm deploy` deixa o pnpm achando
+que a última instalação foi de produção, e o próximo `pnpm run` (o `typecheck` do pre-push)
+roda sozinho um `pnpm install --production`, que remove ~800 pacotes de desenvolvimento.
+Depois de rodar o `prepare-runtime.mjs`, rode `pnpm install --frozen-lockfile` antes do push.
+
+**CI** (`.github/workflows/openweights.yml`, Linux/Windows/macOS): build, runtime
+empacotado, ponta a ponta do host e a child webview com o webview real do sistema. Os
+workflows herdados do upstream continuam no repositório — sincronizar sem conflito — mas
+**desativados** nas configurações do GitHub.
 
 ## Fase 0 — spike de viabilidade (2026-09-23)
 

@@ -1,0 +1,20 @@
+# AgenticOw sobre o dsh-web-app: terceira camada do profile "openweights"
+# (dsh-base → dsh-web-app → esta). Linhas com `id` sobrepõem as de baixo; um
+# patch substitui o `config` inteiro da linha, então cada linha restata todas
+# as chaves que possui.
+
+# O OpenWeights conversa com o Host pelo canal de controle (stdin/stdout).
+# A linha humana "dsh web: <url>" carrega o token de lançamento e não pode ir
+# para log nenhum; o navegador nunca é aberto pelo Host — a UI mora numa
+# webview do app.
+- id: web-runtime
+  config:
+    openBrowser: false
+    printUrl: false
+    surfaceContext: true
+    trustedHosts: !!js ctx.webStartup.trustedHosts
+
+- insert:
+    # Anuncia `ready` ao app quando a árvore assenta e atende os comandos dele.
+    - id: openweights-control
+      name: '@openweights/agenticow-plugins/control'

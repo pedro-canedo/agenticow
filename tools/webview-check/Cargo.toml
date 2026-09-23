@@ -1,0 +1,11 @@
+[package]
+name = "agenticow-webview-check"
+version = "0.0.0"
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "=2.11.5", features = ["unstable"] }
+[workspace]

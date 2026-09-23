@@ -1,0 +1,47 @@
+{
+  "name": "@openweights/agenticow-host",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Runtime do AgenticOw: o Host do dsh supervisionado pelo OpenWeights, com canal de controle por stdio.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "agenticow-host": "bin/agenticow-host.mjs"
+  },
+  "files": [
+    "bin/*.mjs",
+    "src/*.mjs"
+  ],
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  },
+  "dependencies": {
+    "@openweights/agenticow-app": "workspace:*",
+    "@deepseek-ai/cordis-plugin-group": "workspace:*",
+    "@deepseek-ai/dsh": "workspace:*",
+    "@deepseek-ai/dsh-anonymous-user-id": "workspace:*",
+    "@deepseek-ai/dsh-attachment": "workspace:*",
+    "@deepseek-ai/dsh-authorization": "workspace:*",
+    "@deepseek-ai/dsh-bash-local": "workspace:*",
+    "@deepseek-ai/dsh-code-runtime": "workspace:*",
+    "@deepseek-ai/dsh-compaction": "workspace:*",
+    "@deepseek-ai/dsh-fs": "workspace:*",
+    "@deepseek-ai/dsh-hook-protocol": "workspace:*",
+    "@deepseek-ai/dsh-jobs": "workspace:*",
+    "@deepseek-ai/dsh-output-retention": "workspace:*",
+    "@deepseek-ai/dsh-sandbox": "workspace:*",
+    "@deepseek-ai/dsh-sdk-protocol": "workspace:*",
+    "@deepseek-ai/dsh-session-persistence": "workspace:*",
+    "@deepseek-ai/dsh-session-query": "workspace:*",
+    "@deepseek-ai/dsh-session-telemetry": "workspace:*",
+    "@deepseek-ai/dsh-session-title-llm": "workspace:*",
+    "@deepseek-ai/dsh-settings": "workspace:*",
+    "@deepseek-ai/dsh-shell": "workspace:*",
+    "@deepseek-ai/dsh-spill": "workspace:*",
+    "@deepseek-ai/dsh-subagent-in-process-driver": "workspace:*",
+    "@deepseek-ai/dsh-util-time": "workspace:*",
+    "@deepseek-ai/dsh-util-workspace-path": "workspace:*",
+    "@deepseek-ai/dsh-workflow": "workspace:*",
+    "@deepseek-ai/schemastery": "workspace:*"
+  }
+}

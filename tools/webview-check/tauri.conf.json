@@ -1,0 +1,7 @@
+{
+  "productName": "agenticow-webview-check",
+  "version": "0.0.0",
+  "identifier": "dev.openweights.agenticow.webviewcheck",
+  "build": { "frontendDist": "ui" },
+  "app": { "windows": [], "security": { "csp": null } }
+}
