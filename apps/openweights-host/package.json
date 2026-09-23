@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "description": "Runtime do AgenticOw: o Host do dsh supervisionado pelo OpenWeights, com canal de controle por stdio.",
+  "agenticow": {
+    "upstreamTag": "dsh-v0.1.5-rc.3"
+  },
   "license": "MIT",
   "type": "module",
   "bin": {

@@ -174,9 +174,13 @@ writeFileSync(join(OUT, 'THIRD_PARTY_LICENSES.txt'), cabecalho.join('\n') + '\n'
 const raizLicenca = readFileSync(join(REPO, 'LICENSE'), 'utf8')
 writeFileSync(join(OUT, 'LICENSE'), raizLicenca)
 
-const revision = values.revision ?? rodar('git', ['rev-parse', 'HEAD'])
-const upstreamTag = values['upstream-tag'] ?? rodar('git', ['describe', '--tags', '--match', 'dsh-v*', '--abbrev=0'])
 const hostPkg = JSON.parse(readFileSync(join(OUT, 'package.json'), 'utf8'))
+const revision = values.revision ?? process.env.GITHUB_SHA ?? rodar('git', ['rev-parse', 'HEAD'])
+// A tag base do upstream é declarada no package.json do host (atualizada em cada
+// sincronização): o repositório do fork não carrega as tags do upstream, e o
+// checkout da CI é raso.
+const upstreamTag = values['upstream-tag'] ?? hostPkg.agenticow?.upstreamTag
+if (typeof upstreamTag !== 'string' || !/^dsh-v\d/.test(upstreamTag)) falhar('agenticow.upstreamTag ausente no package.json do host')
 const dshPkg = JSON.parse(readFileSync(join(NM, '@deepseek-ai', 'dsh', 'package.json'), 'utf8'))
 
 let arquivos = 0
