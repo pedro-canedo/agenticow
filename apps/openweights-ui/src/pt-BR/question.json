@@ -1,0 +1,17 @@
+{
+  "error.incomplete": "Complete esta pergunta primeiro.",
+  "error.unanswered": "Escolha uma opção ou escreva uma resposta.",
+  "nav.prev": "Pergunta anterior",
+  "nav.next": "Próxima pergunta",
+  "nav.minimize": "Recolher o cartão de perguntas",
+  "nav.maximize": "Expandir o cartão de perguntas",
+  "nav.cancel": "Dispensar todas as perguntas",
+  "option.recommended": "Recomendada",
+  "custom.placeholder": "Escreva sua resposta",
+  "action.skip": "Pular esta pergunta",
+  "action.next": "Próxima",
+  "plan.header": "Revisão do plano",
+  "plan.approve": "Aprovar",
+  "plan.decline": "Recusar",
+  "plan.discuss": "Conversar sobre ele"
+}

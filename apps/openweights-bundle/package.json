@@ -18,6 +18,7 @@
     }
   },
   "dependencies": {
-    "@openweights/agenticow-plugins": "workspace:*"
+    "@openweights/agenticow-plugins": "workspace:*",
+    "@openweights/agenticow-ui": "workspace:*"
   }
 }

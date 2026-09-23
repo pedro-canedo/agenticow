@@ -1,0 +1,20 @@
+{
+  "loading": "Lendo…",
+  "loadMore": "Carregar mais",
+  "changed": "O arquivo mudou; o conteúdo anterior está na tela.",
+  "reloadNow": "Recarregar",
+  "reload": "Ler o arquivo de novo",
+  "wrap.enable": "Ativar quebra de linha",
+  "wrap.disable": "Desativar quebra de linha",
+  "wrap.aria": "Quebra de linha",
+  "openWith": "Abrir com",
+  "viewer.text": "Texto simples",
+  "resourceUnavailable": "O serviço de arquivos está indisponível.",
+  "rendererUnavailable": "A pré-visualização de {name} está indisponível.",
+  "error.notFound": "Arquivo não encontrado. Pode ter sido movido ou apagado.",
+  "error.tooLarge": "Esta página passa do limite de {limit} e não pode ser lida.",
+  "error.notText": "Não é um arquivo de texto; a pré-visualização ainda não está disponível.",
+  "error.notRegularFile": "Não é um arquivo comum; nada para exibir.",
+  "error.unavailable": "A leitura falhou: {message}",
+  "retry": "Tentar de novo"
+}

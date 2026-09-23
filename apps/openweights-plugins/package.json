@@ -7,9 +7,17 @@
   "type": "module",
   "exports": {
     "./control": "./src/control.js",
+    "./preferencias": "./src/preferencias.js",
+    "./compat": "./src/compat.js",
     "./package.json": "./package.json"
   },
   "files": [
     "src/*.js"
-  ]
+  ],
+  "dependencies": {
+    "@deepseek-ai/dsh-client-ui-settings-models": "workspace:*"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.mjs"
+  }
 }

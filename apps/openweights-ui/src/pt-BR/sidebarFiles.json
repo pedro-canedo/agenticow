@@ -1,0 +1,15 @@
+{
+  "type.label": "Arquivos",
+  "guide.title": "Arquivos do workspace",
+  "guide.description": "Navegue pelos arquivos do workspace desta sessão",
+  "loading": "Lendo…",
+  "empty": "Pasta vazia",
+  "truncated": "Itens demais; só uma parte aparece.",
+  "noWorkspace": "Esta sessão não tem pasta de workspace.",
+  "reload": "Recarregar",
+  "entry.other": "Não é arquivo nem pasta, então não pode ser aberto.",
+  "error.notFound": "Essa pasta não existe mais. Pode ter sido movida ou apagada.",
+  "error.outsideWorkspace": "Essa pasta fica fora do workspace, então a barra lateral não a lê.",
+  "error.notDirectory": "Isso não é uma pasta.",
+  "error.unavailable": "A leitura falhou: {message}"
+}

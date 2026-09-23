@@ -1,0 +1,22 @@
+{
+  "command.description": "Escolher o modelo desta conversa",
+  "option.loadError": "O catálogo não carregou: {message}",
+  "option.deepseekV4Flash.description": "Rápido, eficiente e econômico; bom para tarefas focadas, rotineiras ou em paralelo.",
+  "option.deepseekV4Pro.description": "Mais forte em código agêntico, conhecimento e raciocínio difícil; bom para tarefas complexas ou em que a qualidade é crítica, a um custo maior.",
+  "trigger.fallback": "Escolher modelo",
+  "trigger.loading": "Carregando modelos…",
+  "trigger.selectAria": "Escolher modelo",
+  "trigger.aria": "Escolher modelo, atual: {model}",
+  "trigger.ariaEffort": "Escolher modelo, atual: {model}, esforço de raciocínio: {effort}",
+  "menu.aria": "Modelo e esforço de raciocínio",
+  "menu.model": "Modelo",
+  "menu.effort": "Esforço",
+  "effort.providerDefault": "Padrão",
+  "status.loading": "Atualizando a lista de modelos…",
+  "error.action": "A operação com o modelo falhou: {message}",
+  "action.reload": "Recarregar",
+  "warning.groupLoad": "{name} não carregou: {message}",
+  "empty.models": "Nenhum modelo disponível.",
+  "blocked.composer": "Este modelo está indisponível — escolha outro para continuar",
+  "empty.efforts": "Este modelo não oferece níveis de esforço de raciocínio."
+}

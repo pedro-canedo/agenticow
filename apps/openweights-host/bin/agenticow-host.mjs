@@ -63,6 +63,10 @@ canal.enviar('hello', {
   pid: process.pid,
 })
 
+// Segunda trava da telemetria do upstream (a primeira é a linha desativada no
+// patch do bundle): nada de log de sessão para a DeepSeek.
+process.env.DSH_TELEMETRY_DISABLED ||= '1'
+
 const porta = argumento('--port') ?? '0'
 if (!/^\d{1,5}$/.test(porta) || Number(porta) > 65535) {
   canal.fatal(`porta inválida: ${porta}`)

@@ -1,0 +1,8 @@
+{
+  "chip.label": "Plano",
+  "chip.on.aria": "Modo de planejamento ligado; pressione para desligar",
+  "chip.on.title": "Modo de planejamento ligado — clique para desligar (/plan off)",
+  "chip.off.aria": "Modo de planejamento desligado; pressione para ligar",
+  "chip.off.title": "Modo de planejamento desligado — clique para ligar (/plan)",
+  "chip.exitFailed": "Não foi possível sair do modo de planejamento"
+}

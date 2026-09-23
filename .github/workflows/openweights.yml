@@ -58,8 +58,25 @@ jobs:
       - name: Runtime empacotado
         run: node apps/openweights-host/scripts/prepare-runtime.mjs --out "${{ runner.temp }}/agenticow-runtime"
 
-      - name: Host de ponta a ponta
-        run: node --test --test-reporter=spec "apps/openweights-host/tests/*.test.mjs"
+      - name: Host e composição de ponta a ponta
+        run: node --test --test-reporter=spec "apps/openweights-host/tests/*.test.mjs" "apps/openweights-plugins/tests/*.test.mjs"
+        env:
+          AGENTICOW_RUNTIME: ${{ runner.temp }}/agenticow-runtime
+
+      # O client.js é gerado a partir das traduções e da marca; tem de estar em dia.
+      - name: UI — client.js em dia e pt-BR completo
+        if: runner.os == 'Linux'
+        run: |
+          node apps/openweights-ui/scripts/gerar-cliente.mjs --check
+          node apps/openweights-ui/scripts/cobertura.mjs
+
+      - name: UI no WebKit (pt-BR e inglês)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          PW=$(ls -d node_modules/.pnpm/playwright@*/node_modules/playwright | head -1)
+          node "$PW/cli.js" install --with-deps webkit
+          node --test --test-reporter=spec "apps/openweights-ui/tests/*.test.mjs"
         env:
           AGENTICOW_RUNTIME: ${{ runner.temp }}/agenticow-runtime
 

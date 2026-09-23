@@ -588,6 +588,9 @@ importers:
       '@openweights/agenticow-plugins':
         specifier: workspace:*
         version: link:../openweights-plugins
+      '@openweights/agenticow-ui':
+        specifier: workspace:*
+        version: link:../openweights-ui
 
   apps/openweights-host:
     dependencies:
@@ -673,7 +676,13 @@ importers:
         specifier: workspace:*
         version: link:../openweights-bundle
 
-  apps/openweights-plugins: {}
+  apps/openweights-plugins:
+    dependencies:
+      '@deepseek-ai/dsh-client-ui-settings-models':
+        specifier: workspace:*
+        version: link:../../packages/client/ui-settings-models
+
+  apps/openweights-ui: {}
 
   apps/web:
     devDependencies:

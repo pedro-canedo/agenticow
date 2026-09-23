@@ -6,15 +6,57 @@
 # O OpenWeights conversa com o Host pelo canal de controle (stdin/stdout).
 # A linha humana "dsh web: <url>" carrega o token de lançamento e não pode ir
 # para log nenhum; o navegador nunca é aberto pelo Host — a UI mora numa
-# webview do app.
+# webview do app. Sem `surfaceContext`: a seção que ele acrescenta ao prompt
+# diria ao modelo que "a implementação do DeepSeek Harness" está na pasta do
+# runtime, o que num runtime empacotado só engana.
 - id: web-runtime
   config:
     openBrowser: false
     printUrl: false
-    surfaceContext: true
+    surfaceContext: false
     trustedHosts: !!js ctx.webStartup.trustedHosts
+
+# Identidade que o modelo recebe.
+- id: system-prompt
+  config:
+    personaPrefix: >-
+      You are AgenticOw, the coding agent of OpenWeights, powered by the {{model}} model.
+    personaSuffix: Your working directory is {{cwd}}.
+
+# Nada sai para a DeepSeek sem a pessoa escolher o provedor dela:
+# - a telemetria enviava o trecho do log da sessão a harness-telemetry.deepseeksvc.com
+#   quando a pessoa dava feedback numa mensagem (o host também exporta
+#   DSH_TELEMETRY_DISABLED);
+# - sem telemetria, os botões e o comando de feedback só enganariam;
+# - o inventário anexava a lista de plugins ativos às requisições à API da DeepSeek.
+- id: session-telemetry-otel
+  disabled: true
+
+- id: command-feedback
+  disabled: true
+
+- id: message-feedback
+  disabled: true
+
+- id: ui-message-feedback
+  disabled: true
+
+- id: plugin-package-inventory-deepseek
+  disabled: true
 
 - insert:
     # Anuncia `ready` ao app quando a árvore assenta e atende os comandos dele.
     - id: openweights-control
       name: '@openweights/agenticow-plugins/control'
+
+    # Polyfill dos Iterator helpers para o WKWebView do macOS 14 (Safari < 18.4).
+    - id: openweights-compat
+      name: '@openweights/agenticow-plugins/compat'
+
+    # Idioma escolhido no app.
+    - id: openweights-preferencias
+      name: '@openweights/agenticow-plugins/preferencias'
+
+    # Marca e pt-BR no navegador.
+    - id: openweights-ui
+      name: '@openweights/agenticow-ui'

@@ -1,0 +1,14 @@
+{
+  "trigger": "Configurações",
+  "title": "Configurações",
+  "close": "Fechar",
+  "openDocument": "Abrir o arquivo de configuração",
+  "openDocument.error": "Não foi possível abrir o arquivo de configuração",
+  "general.nav": "Geral",
+  "connection.error": "Desconectado",
+  "connection.retry": "Reconectar agora",
+  "connection.connecting": "Reconectando",
+  "connection.connected": "Conectado",
+  "connection.reconnect": "Desconectado; reconectar agora",
+  "connection.restart": "Reconectando automaticamente; reconectar agora"
+}

@@ -1,0 +1,12 @@
+{
+  "section.files": "Arquivos e pastas",
+  "section.sessions": "Sessões",
+  "candidate.noCwd": "(sem pasta de trabalho)",
+  "crumb.root": "Workspace",
+  "time.now": "agora",
+  "time.minutes": "{n}min",
+  "time.hours": "{n}h",
+  "time.days": "{n}d",
+  "time.months": "{n}m",
+  "time.years": "{n}a"
+}

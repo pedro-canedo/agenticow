@@ -1,0 +1,16 @@
+{
+  "description.compact": "Compactar o histórico antigo da conversa",
+  "description.export": "Baixar o log desta sessão como arquivo ZIP",
+  "description.feedback": "registrar um feedback sobre esta sessão",
+  "description.goal": "definir ou ver o objetivo de uma tarefa longa",
+  "description.permission": "Trocar o preset de permissão (modo de sandbox + política de aprovação)",
+  "description.plan": "Entrar ou sair do modo de planejamento",
+  "search.placeholder": "Buscar…",
+  "search.aria": "Filtrar opções",
+  "status.loading": "Carregando opções…",
+  "status.applying": "Aplicando…",
+  "status.empty": "Nenhuma opção",
+  "overlay.aria": "Opções de /{command}",
+  "listbox.aria": "Resultados de /{command}",
+  "notice.attachmentsUnsupported": "/{command} não aceita anexos; remova-os antes"
+}

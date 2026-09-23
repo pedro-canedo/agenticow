@@ -1,0 +1,11 @@
+{
+  "title": "PDF",
+  "pageImage": "Página {page} do PDF",
+  "loading": "Abrindo o PDF…",
+  "rendering": "Renderizando a página…",
+  "failed": "Não foi possível exibir o PDF: {message}",
+  "password": "Este PDF pede senha; pré-visualizar PDF protegido não é suportado.",
+  "workerFailed": "O processo que renderiza o PDF não conseguiu continuar. Tente de novo.",
+  "unsupported": "A pré-visualização de PDF precisa do arquivo completo.",
+  "retry": "Tentar de novo"
+}

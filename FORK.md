@@ -47,7 +47,16 @@ apps/openweights-host              @openweights/agenticow-host — o que o app e
   scripts/prepare-runtime.mjs      monta o runtime autocontido que o app instala
   tests/host.test.mjs              ponta a ponta pelo protocolo (runtime empacotado)
 apps/openweights-bundle            @openweights/agenticow-app — bundle: só o cordis.patch.yml
-apps/openweights-plugins           @openweights/agenticow-plugins — plugins Cordis (control, …)
+apps/openweights-plugins           @openweights/agenticow-plugins — plugins Cordis do Host
+  src/control.js                   canal de controle dentro da árvore; anuncia `ready`
+  src/preferencias.js              idioma vindo do app (`locale`)
+  src/compat.js                    polyfill dos Iterator helpers para o WKWebView do macOS 14
+apps/openweights-ui                @openweights/agenticow-ui — plugin de navegador
+  src/pt-BR/<namespace>.json       tradução pt-BR da UI do upstream (1.198 strings, 40 namespaces)
+  src/cliente.template.js          marca (barra lateral, conversa vazia, título, ícone) + registro do pt-BR
+  scripts/gerar-cliente.mjs        gera o client.js (formato do carregador do cliente, sem build)
+  scripts/extrair-dicionarios.mjs  extrai o inglês que a UI do upstream registra de fato
+  scripts/cobertura.mjs            portão: cobertura, marcadores {x} e chaves órfãs
 tools/webview-check                a UI dentro da child webview do Tauri, por sistema
 ```
 
@@ -90,6 +99,23 @@ inteira), `LICENSE` e `runtime.json` (identidade). No Linux: **8 s, 11.972 arqui
 que a última instalação foi de produção, e o próximo `pnpm run` (o `typecheck` do pre-push)
 roda sozinho um `pnpm install --production`, que remove ~800 pacotes de desenvolvimento.
 Depois de rodar o `prepare-runtime.mjs`, rode `pnpm install --frozen-lockfile` antes do push.
+
+**Identidade e privacidade (camada do bundle).** Persona "AgenticOw" no prompt; sem a seção
+que diria ao modelo que "a implementação do DeepSeek Harness" está na pasta do runtime.
+Desligados: `session-telemetry-otel` (enviava o log da sessão a
+`harness-telemetry.deepseeksvc.com` quando a pessoa dava feedback — o host ainda exporta
+`DSH_TELEMETRY_DISABLED`), `command-feedback`, `message-feedback`, `ui-message-feedback` e
+`plugin-package-inventory-deepseek` (anexava os plugins ativos às requisições à API da
+DeepSeek). `tests/composicao.test.mjs` lê a composição final e falha se uma dessas linhas
+sumir do upstream (o `disabled: true` viraria no-op em silêncio) e se o runtime abrir
+conexão de saída em repouso.
+
+**pt-BR e marca.** O registro de idiomas não deixa sobrescrever o `en` de um namespace; o
+pt-BR entra como idioma externo com fallback no inglês. Em inglês, a marca vem dos slots
+(`sidebar.brand.*`, `conversation.hero.brand.mark`) e do título vigiado, e o aviso de
+testes do upstream é marcado como visto (a versão é lida do bundle do `ui-settings-models`).
+Limitação conhecida: em inglês o bordão da conversa vazia continua o do upstream ("Into the
+Unknown").
 
 **CI** (`.github/workflows/openweights.yml`, Linux/Windows/macOS): build, runtime
 empacotado, ponta a ponta do host e a child webview com o webview real do sistema. Os
