@@ -30,7 +30,11 @@ const pular = RUNTIME === undefined ? 'defina AGENTICOW_RUNTIME' : pw === undefi
 const homes = []
 after(() => { for (const h of homes) rmSync(h, { recursive: true, force: true }) })
 
-async function abrir(locale) {
+/**
+ * @param {string} locale
+ * @param {(page: any) => Promise<void>} [acao] - o que fazer na página antes de ler o texto.
+ */
+async function abrir(locale, acao) {
   const home = mkdtempSync(join(tmpdir(), 'agenticow-ui-'))
   homes.push(home)
   const host = spawn(process.execPath, [join(RUNTIME, 'bin', 'agenticow-host.mjs'), '--port', '0'], {
@@ -51,6 +55,7 @@ async function abrir(locale) {
   page.on('console', (m) => { if (m.type() === 'error') erros.push(m.text()) })
   await page.goto(ready.url, { waitUntil: 'load' })
   await page.waitForTimeout(8000)
+  if (acao !== undefined) await acao(page)
   const r = {
     erros,
     titulo: await page.title(),
@@ -83,5 +88,31 @@ describe(`UI do AgenticOw (${ENGINE})`, { skip: pular }, () => {
     assert.equal(r.lang, 'en')
     assert.match(r.texto, /^AgenticOw /)
     assert.doesNotMatch(r.texto, /Internal Testing Notice|DSH Local Build/)
+    // O cérebro vem do OpenWeights: nada de pedir a chave da DeepSeek.
+    assert.doesNotMatch(r.texto, /API key|DeepSeek/)
+  })
+
+  it('em pt-BR, depois das boas-vindas não pede chave de provedor nenhum', async () => {
+    const r = await abrir('pt-BR', async (page) => {
+      await page.getByRole('button', { name: 'Continuar' }).click()
+      await page.waitForTimeout(1500)
+    })
+    assert.deepEqual(r.erros, [])
+    assert.doesNotMatch(r.texto, /Bem-vindo ao AgenticOw/)
+    assert.doesNotMatch(r.texto, /chave de API|provedor oficial da DeepSeek/)
+  })
+
+  it('a página de Modelos diz que os modelos vêm do OpenWeights', async () => {
+    const r = await abrir('en', async (page) => {
+      await page.getByText('Settings', { exact: true }).first().click()
+      await page.waitForTimeout(1000)
+      await page.getByText('Models', { exact: true }).first().click()
+      await page.waitForTimeout(1500)
+    })
+    assert.deepEqual(r.erros, [])
+    assert.match(r.texto, /Models come from OpenWeights/)
+    assert.doesNotMatch(r.texto, /DeepSeek/)
+    // Acrescentar provedor aqui seria substituído pelo catálogo do app.
+    assert.doesNotMatch(r.texto, /Add provider|Add a custom provider/)
   })
 })

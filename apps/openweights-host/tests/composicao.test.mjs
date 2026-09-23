@@ -59,6 +59,18 @@ describe('composição do AgenticOw', { skip: pular }, () => {
     }
   })
 
+  it('o cérebro vem só do OpenWeights: sem o provedor nem a busca da DeepSeek', async () => {
+    const c = await composicao()
+    for (const id of ['llm-deepseek', 'web-search-deepseek']) {
+      assert.ok(c.has(id), `a linha "${id}" sumiu do upstream — o patch não a desliga mais; reveja o bundle`)
+      assert.equal(c.get(id).disabled, true, `"${id}" tem de estar desligada`)
+    }
+    assert.equal(c.get('llm-pi-ai')?.disabled, false, 'as rotas do app vivem no llm-pi-ai')
+    const padrao = c.get('agent-default-model')?.texto ?? ''
+    assert.match(padrao, /provider: openweights/)
+    assert.doesNotMatch(padrao, /deepseek-official|deepseek-flash/)
+  })
+
   it('insere os plugins do OpenWeights e esconde a URL com o token', async () => {
     const c = await composicao()
     assert.equal(c.get('openweights-control')?.name, '@openweights/agenticow-plugins/control')

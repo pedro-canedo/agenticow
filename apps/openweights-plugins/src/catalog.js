@@ -17,8 +17,9 @@
  *      usuário pela API de configurações (com validação de schema — uma
  *      mudança do upstream quebra no teste, não na máquina de alguém);
  *   3. o modelo padrão é reparado só quando está ausente ou quebrado, e um
- *      esforço de raciocínio que o modelo não aceita sai — as mesmas regras
- *      que o app aplicava editando o settings.yaml por fora.
+ *      esforço de raciocínio que o modelo não aceita sai. O cérebro vem sempre
+ *      do app: a composição não tem outro provedor, então padrão fora das rotas
+ *      do catálogo (inclusive o `deepseek-official` de homes antigos) é quebrado.
  *
  * Responde `{"type": "catalog-applied", "revision"}` ou `catalog-error`.
  * @module @openweights/agenticow-plugins/catalog
@@ -32,8 +33,6 @@ const CANAL = Symbol.for('openweights.agenticow.control')
 /** Rotas que o OpenWeights gerencia; qualquer outra é da pessoa. */
 export const ROTAS_GERENCIADAS = Object.freeze(['openweights', 'openrouter', 'ninerouter'])
 
-/** Provedor nativo do upstream: uma escolha da pessoa, nunca tocada. */
-const PROVEDOR_NATIVO = 'deepseek-official'
 
 const NOME_DE_CHAVE = /^[A-Z][A-Z0-9_]*_API_KEY$/
 
@@ -57,11 +56,7 @@ const CHAVES = new Map()
  */
 export function padraoPrecisaTrocar(atual, rotas) {
   if (atual === undefined || typeof atual.provider !== 'string' || typeof atual.model !== 'string') return true
-  if (ROTAS_GERENCIADAS.includes(atual.provider)) {
-    return !(rotas[atual.provider]?.models ?? []).some((m) => m.id === atual.model)
-  }
-  if (atual.provider === PROVEDOR_NATIVO || rotas[atual.provider] !== undefined) return false
-  return true
+  return !(rotas[atual.provider]?.models ?? []).some((m) => m.id === atual.model)
 }
 
 /**
@@ -72,9 +67,13 @@ export function padraoPrecisaTrocar(atual, rotas) {
  */
 export function proximoPadrao(atual, rotas) {
   if (padraoPrecisaTrocar(atual, rotas)) {
-    // O reset aponta para o primeiro modelo local; sem modelo local, não inventa.
-    const primeiro = rotas.openweights?.models?.[0]
-    return primeiro === undefined ? undefined : { provider: 'openweights', model: primeiro.id }
+    // O reset aponta para o primeiro modelo, na ordem das rotas do app (o local
+    // antes dos remotos); sem modelo nenhum, não inventa.
+    for (const provider of ROTAS_GERENCIADAS) {
+      const primeiro = rotas[provider]?.models?.[0]
+      if (primeiro !== undefined) return { provider, model: primeiro.id }
+    }
+    return undefined
   }
   // Esforço que o modelo da rota gerenciada não declarou sai; `off` é sempre aceito.
   const { provider, model, reasoningEffort } = /** @type {Padrao} */ (atual)

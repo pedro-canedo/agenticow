@@ -15,8 +15,11 @@ describe('modelo padrão', () => {
     assert.deepEqual(proximoPadrao(undefined, rotas), { provider: 'openweights', model: 'qwen3-8b' })
   })
 
-  it('sem modelo local → não inventa', () => {
-    assert.equal(proximoPadrao(undefined, { openrouter: rotas.openrouter }), undefined)
+  it('sem modelo local → o primeiro remoto do app; sem modelo nenhum → não inventa', () => {
+    assert.deepEqual(proximoPadrao(undefined, { openrouter: rotas.openrouter }), { provider: 'openrouter', model: 'anthropic/claude' })
+    assert.deepEqual(proximoPadrao(undefined, { ninerouter: { models: [{ id: 'kimi' }] } }), { provider: 'ninerouter', model: 'kimi' })
+    assert.equal(proximoPadrao(undefined, {}), undefined)
+    assert.equal(proximoPadrao(undefined, { openweights: { models: [] } }), undefined)
   })
 
   it('rota gerenciada com modelo que sumiu → troca', () => {
@@ -28,9 +31,11 @@ describe('modelo padrão', () => {
     assert.equal(proximoPadrao({ provider: 'openrouter', model: 'anthropic/claude' }, rotas), undefined)
   })
 
-  it('provedor nativo do upstream ou rota da pessoa → nunca toca', () => {
-    assert.equal(padraoPrecisaTrocar({ provider: 'deepseek-official', model: 'x' }, rotas), false)
-    assert.equal(padraoPrecisaTrocar({ provider: 'minha-rota', model: 'y' }, { ...rotas, 'minha-rota': { models: [] } }), false)
+  it('o deepseek-official de um home antigo e o padrão da composição → o primeiro modelo do app', () => {
+    // A composição do AgenticOw não tem o adaptador da DeepSeek: o cérebro vem do app.
+    assert.equal(padraoPrecisaTrocar({ provider: 'deepseek-official', model: 'deepseek-flash' }, rotas), true)
+    assert.deepEqual(proximoPadrao({ provider: 'deepseek-official', model: 'deepseek-flash' }, rotas), { provider: 'openweights', model: 'qwen3-8b' })
+    assert.deepEqual(proximoPadrao({ provider: 'openweights', model: 'sem-modelo' }, rotas), { provider: 'openweights', model: 'qwen3-8b' })
   })
 
   it('rota desconhecida (ex.: o "openai" de versões antigas) → troca', () => {
@@ -43,8 +48,10 @@ describe('modelo padrão', () => {
     assert.equal(proximoPadrao({ provider: 'openweights', model: 'qwen3-8b', reasoningEffort: 'high' }, rotas), undefined)
   })
 
-  it('esforço fora de rota gerenciada é da pessoa', () => {
-    assert.equal(proximoPadrao({ provider: 'deepseek-official', model: 'v4', reasoningEffort: 'max' }, rotas), undefined)
+  it('esforço declarado num modelo remoto fica; o de um modelo que sumiu vai junto com ele', () => {
+    const comEsforco = { ...rotas, openrouter: { models: [{ id: 'anthropic/claude', reasoningEfforts: { high: 'high' } }] } }
+    assert.equal(proximoPadrao({ provider: 'openrouter', model: 'anthropic/claude', reasoningEffort: 'high' }, comEsforco), undefined)
+    assert.deepEqual(proximoPadrao({ provider: 'deepseek-official', model: 'v4', reasoningEffort: 'max' }, rotas), { provider: 'openweights', model: 'qwen3-8b' })
   })
 })
 

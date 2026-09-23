@@ -1,7 +1,7 @@
 {
   "nav": "Modelos",
   "title": "Modelos",
-  "intro": "Informe suas chaves de API para usar os modelos dos provedores abaixo.",
+  "intro": "Os provedores abaixo são os que o OpenWeights entrega ao AgenticOw.",
   "edit": "Editar",
   "editProvider": "Editar {provider}",
   "remove": "Apagar",

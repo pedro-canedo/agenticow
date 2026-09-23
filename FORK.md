@@ -114,6 +114,19 @@ DeepSeek). `tests/composicao.test.mjs` lê a composição final e falha se uma d
 sumir do upstream (o `disabled: true` viraria no-op em silêncio) e se o runtime abrir
 conexão de saída em repouso.
 
+**O cérebro vem do OpenWeights.** A composição não tem provedor próprio: o adaptador nativo
+da DeepSeek (`llm-deepseek`) e a busca dela (`web-search-deepseek`) estão desligados, e o
+modelo padrão da composição aponta para a rota `openweights`. Sem o adaptador, o onboarding
+do upstream (que pedia a chave da DeepSeek quando nenhum provedor servia) se dá por
+encerrado sozinho — sem o que oferecer, ele completa. `web_search` responde ao modelo que a
+busca não está disponível (as alternativas do upstream, Exa e Perplexity, também são
+serviços de fora); `web_fetch` continua. A página de Modelos ganha, pelo slot
+`settings.models.footer`, o aviso de que os modelos vêm do app, e perde os dois botões de
+acrescentar provedor (o catálogo substitui a seção `llm-pi-ai` inteira; não há opção para
+desligá-los, então o plugin de UI os esconde pelo texto do próprio upstream no idioma
+ativo). `tests/composicao.test.mjs` e o e2e da UI cobram as três coisas: linhas desligadas,
+nenhum pedido de chave depois das boas-vindas, e a página de Modelos sem os botões.
+
 **Catálogo de modelos.** O app monta a seção `llm-pi-ai` (as rotas `openweights`,
 `openrouter` e `ninerouter`) e a manda pelo canal; o plugin a aplica pela API de
 configurações (com validação de schema) e repara o modelo padrão só quando está ausente ou

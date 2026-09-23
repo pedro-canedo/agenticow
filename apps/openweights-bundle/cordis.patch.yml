@@ -44,6 +44,27 @@
 - id: plugin-package-inventory-deepseek
   disabled: true
 
+# O cérebro vem sempre do OpenWeights: as rotas `openweights`, `openrouter` e
+# `ninerouter` que o app entrega pelo catálogo (llm-pi-ai), configuradas nas telas
+# dele. Sem o adaptador nativo da DeepSeek não há rota `deepseek-official` — e o
+# onboarding do upstream, que pedia a chave dela quando nenhum provedor servia,
+# se dá por encerrado sozinho (sem adaptador, não há o que oferecer).
+- id: llm-deepseek
+  disabled: true
+
+# A busca na web do upstream é um pedido à API da DeepSeek (e as alternativas,
+# Exa e Perplexity, também são serviços de fora). Sem provedor, `web_search`
+# responde ao modelo que a busca não está disponível; `web_fetch` continua.
+- id: web-search-deepseek
+  disabled: true
+
+# Padrão da composição, antes de qualquer catálogo; o plugin do catálogo troca
+# pelo primeiro modelo que o app entregar.
+- id: agent-default-model
+  config:
+    provider: openweights
+    model: sem-modelo
+
 - insert:
     # Anuncia `ready` ao app quando a árvore assenta e atende os comandos dele.
     - id: openweights-control
